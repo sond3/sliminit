@@ -12,19 +12,13 @@ var fs = require('fs');
 var proxyServer = "localhost:8889",
     port = 3001;
 
-// GENERIC CSS
+// GENERIC STYLES
+var less = require('gulp-less');
 var autoprefixer = require('gulp-autoprefixer');
 var minifycss = require('gulp-minify-css');
 
-// POSTCSS
-var postcss = require('gulp-postcss');
-var atImport = require("postcss-import");
-var customProperties = require("postcss-custom-properties");
-var customMedia = require('postcss-custom-media');
-var calc = require("postcss-calc");
-var colorFunction = require("postcss-color-function");
-// GRID
-var lost = require('lost');
+//SOURCEMAPS
+var sourcemaps = require('gulp-sourcemaps');
 
 // IMAGEMIN
 var imagemin = require('gulp-imagemin');
@@ -50,8 +44,8 @@ gulp.task('default', ['watch'], shell.task([
 gulp.task('watch', ['browser-sync'], function () {
 
     gulp.watch([
-        'public/static/css/**/*.css'
-        ], ['css-build']
+        'public/static/css/**/*.less'
+        ], ['less-build']
     ).on('change', browserSync.reload);;
 
     gulp.watch([
@@ -78,9 +72,9 @@ gulp.task('js-build', function(callback) {
   );
 });
 
-gulp.task('css-build', function(callback) {
+gulp.task('less-build', function(callback) {
   runSequence(
-    'css',
+    'less',
     callback
   );
 });
@@ -113,38 +107,30 @@ gulp.task('browser-sync', function() {
 /**
 * Styles task
 */
-gulp.task('css', function () {
 
+gulp.task('less', function () {
     var dest_folder = 'public/static/build/css';
 
     var src = [];
-    src.push('public/static/css/main.css');
+    src.push('public/static/css/main.less');
 
     del(dest_folder + '/**/*');
 
-    var minOpts = {processImport:false, keepSpecialComments:false};
-
-    var processors = [
-        atImport(),
-        require('postcss-mixins'),
-        require('postcss-nested'),
-        customProperties(),
-        customMedia(),
-        calc(),
-        colorFunction(),
-        lost
-    ];
+    var minOpts = {processImport:true, keepSpecialComments:false};
 
     return gulp.src(src)
-        .pipe( postcss(processors) )
+        .pipe(less())
         .on('error', swallowError)
+        .pipe(autoprefixer('last 2 version', 'safari 5', 'ie 8', 'ie 9', 'opera 12.1'))
         .pipe(minifycss(minOpts))
-        .pipe(autoprefixer('last 2 version', 'safari 5', 'ie 9', 'opera 12.1'))
+        .pipe(sourcemaps.init())
         .pipe(concat(''+(new Date().getTime())+'.css'))
+        .pipe(sourcemaps.write("./"))
         .pipe(gulp.dest(dest_folder))
-        .pipe(notify({message:"Compress css"})
-    );
+        .pipe(notify("Less compiled, prefixed and minified"))
+
 });
+
 
 /**
 * Concat and minify js
