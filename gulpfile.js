@@ -45,8 +45,8 @@ gulp.task('watch', ['browser-sync'], function () {
 
     gulp.watch([
         'public/static/css/**/*.less'
-        ], ['less-build']
-    ).on('change', browserSync.reload);;
+        ], ['less']
+    );
 
     gulp.watch([
         'public/static/js/**/*.js',
@@ -123,12 +123,15 @@ gulp.task('less', function () {
         .on('error', swallowError)
         .pipe(autoprefixer('last 2 version', 'safari 5', 'ie 8', 'ie 9', 'opera 12.1'))
         .pipe(minifycss(minOpts))
-        .pipe(sourcemaps.init())
+        //.pipe(sourcemaps.init())
         .pipe(concat(''+(new Date().getTime())+'.css'))
-        .pipe(sourcemaps.write("./"))
+        //.pipe(sourcemaps.write("./"))
         .pipe(gulp.dest(dest_folder))
         .pipe(notify("Less compiled, prefixed and minified"))
-
+        .pipe(browserSync.reload({
+            stream: true
+        })
+    )
 });
 
 
@@ -144,7 +147,6 @@ gulp.task('js', function () {
     del(dest_folder + '/**/*');
 
     for(var item in vendorJs.js) {
-        console.log(vendorJs.js[item].src);
         src.push(vendorJs.js[item].src);
     }
 

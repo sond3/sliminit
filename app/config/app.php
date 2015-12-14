@@ -17,7 +17,7 @@ return [
         'pass' => '12345'
     ],
 
-    'css' => scandir('static/build/css', 1)[0],
+    'css' => end(explode('/',glob('static/build/css/*.css')[0])),
 
     'js' => scandir('static/build/js', 1)[0],
 
